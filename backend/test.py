@@ -1,6 +1,6 @@
 
 from pipeline import generate_presentation
-
-result = generate_presentation("Neural Networks for beginners")
+prompt = input('Enter your prompt')
+result = generate_presentation(prompt)
 
 print(result)
