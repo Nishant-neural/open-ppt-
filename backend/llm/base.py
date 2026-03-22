@@ -1,0 +1,5 @@
+# Further work needed 
+
+class BaseLLM:
+    def generate(self, prompt: str) -> str:
+        raise NotImplementedError("LLM must implement generate()")

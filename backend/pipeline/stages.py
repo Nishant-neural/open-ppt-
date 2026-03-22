@@ -9,25 +9,30 @@ class BaseStage:
             return json.loads(text)
         except:
             return None
-
+        
     def fix_json(self, bad_json):
-        fixed = call_llm(CLEANUP_PROMPT + bad_json)
+        fixed = self.llm.generate(CLEANUP_PROMPT + bad_json)
         return self.safe_parse(fixed)
 
-
 class OutlineStage(BaseStage):
+    def __init__(self, llm):
+        self.llm = llm
+
     def run(self, user_prompt):
         prompt = OUTLINE_PROMPT + "\nTopic:\n" + user_prompt
-        response = call_llm(prompt)
+        response = self.llm.generate(prompt)
 
         parsed = self.safe_parse(response)
         return parsed or self.fix_json(response)
 
 
 class SlideStage(BaseStage):
+    def __init__(self, llm):
+        self.llm = llm
+
     def run(self, outline_json):
         prompt = SLIDE_PROMPT + "\nOutline:\n" + json.dumps(outline_json)
-        response = call_llm(prompt)
+        response = self.llm.generate(prompt)
 
         parsed = self.safe_parse(response)
         return parsed or self.fix_json(response)

@@ -1,11 +1,15 @@
+
 from pipeline.engine import PipelineEngine
 from pipeline.stages import OutlineStage, SlideStage
+from llm.selector import get_llm
 
 
 def generate_presentation(user_prompt):
+    llm = get_llm()
+
     pipeline = PipelineEngine([
-        OutlineStage(),
-        SlideStage()
+        OutlineStage(llm),
+        SlideStage(llm)
     ])
 
     result = pipeline.run(user_prompt)
