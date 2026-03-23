@@ -1,2 +1,4 @@
 .env
 backend/__pycache__/
+backend/llm/__pycache__/
+backend/pipeline/__pycache__/
