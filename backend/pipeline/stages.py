@@ -31,8 +31,9 @@ class OutlineStage(BaseStage):
 
 
 class SlideStage(BaseStage):
-    def __init__(self, llm):
+    def __init__(self, llm, config):
         self.llm = llm
+        self.config = config
 
     def run(self, outline_json):
         prompt= build_prompt(SLIDE_PROMPT,self.config)
