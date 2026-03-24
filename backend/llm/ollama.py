@@ -10,7 +10,7 @@ class OllamaLLM(BaseLLM):
     def generate(self, prompt: str, retries=3) -> str:
         for attempt in range(retries):
             try:
-                response = requests.post(
+                answer = requests.post(
                     f"{OLLAMA_BASE_URL}/api/generate",
                     json={
                         "model": self.model,
@@ -21,9 +21,9 @@ class OllamaLLM(BaseLLM):
                     timeout=OLLAMA_TIMEOUT_SECONDS
                 )
 
-                payload = response.json()
+                payload = answer.json()
 
-                if response.ok and "response" in payload:
+                if answer.ok and "response" in payload:
                     return payload["response"]
 
             except Exception as e:

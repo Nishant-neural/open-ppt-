@@ -5,3 +5,4 @@ backend/pipeline/__pycache__/
 backend/config/__pycache__/
 backend/presentation/__pycache__/
 backend/prompt/__pycache__/
+output.pptx

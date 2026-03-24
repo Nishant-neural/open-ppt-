@@ -25,29 +25,26 @@ Rules:
 - No explanations outside JSON
 """
 
-SLIDE_PROMPT = """
-You are an expert presentation creator.
+SLIDE_PLAN_PROMPT = """
+Create a slide plan for this presentation.
 
-Convert the given outline into slides.
+Outline:
+{outline_json}
 
-Return ONLY valid JSON.
-
-Format:
-{
+Return ONLY JSON:
+{{
   "slides": [
-    {
+    {{
       "heading": "string",
-      "points": ["point1", "point2", "point3"]
-    }
+      "description": "what this slide should cover"
+    }}
   ]
-}
+}}
 
 Rules:
-- Each section → 1-2 slides
-- Max 5 bullet points per slide
-- Each point ≤ 12 words
-- Clear and concise
-- No explanations outside JSON
+- 5–10 slides
+- logical flow
+- no bullet points yet
 """
 
 CLEANUP_PROMPT = """

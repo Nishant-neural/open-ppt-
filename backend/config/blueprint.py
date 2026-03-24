@@ -1,6 +1,5 @@
 class PresentationConfig:
-    def __init__(
-        self,
+    def __init__( self,
         mode="default",          # student | startup | professional
         tone="clear",            # simple | detailed | persuasive
         length="medium",         # short | medium | long
