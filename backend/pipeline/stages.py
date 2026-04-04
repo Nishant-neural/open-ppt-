@@ -36,7 +36,7 @@ class SlidePlannerStage(BaseStage):
 
     def run(self, outline_json):
         prompt = f"""
-Create a slide plan for this presentation.
+Create a presentation slide plan.
 
 Outline:
 {outline_json}
@@ -45,16 +45,31 @@ Return ONLY JSON:
 {{
   "slides": [
     {{
+      "type": "title | bullets",
+      "layout": "center | two_column",
       "heading": "string",
-      "description": "what this slide should cover"
+      "description": "short description "
     }}
   ]
 }}
 
 Rules:
-- 5–10 slides
+- First slide must be "title"
+- Keep variety in layouts
+- Do not invent new types and layouts.
+- Stick to the  types and layouts  given in example only.
+- 5-10 slides
 - logical flow
 - no bullet points yet
+
+- Use two_column when:
+  - comparing ideas
+  - listing categories
+  - showing pros/cons
+
+- Use center when:
+  - explaining concepts
+  - storytelling
 """
 
         response = self.llm.generate(prompt)
@@ -81,23 +96,54 @@ class SlideContentStage(BaseStage):
         }
 
     def generate_slide_content(self, slide):
-        prompt = f"""
-Generate content for ONE slide.
-strictly follow given schema.
-The contents should strictly be in points  along with heading in the output JSON.
-
-Slide plan:
-{slide}
-
-Return ONLY JSON:
-{{
-  "heading": "string",
-  "points": ["point1", "point2", "point3"]
-}}
-"""
-
-        response = self.llm.generate(prompt)
+        if slide.get("layout") not in ["center", "two_column"]:
+           slide["layout"] = "center"
+           
+        layout = slide.get("layout")
+        
+        if layout == "two_column":
+           response = self.generate_two_column(slide)
+        else:
+           response = self.generate_bullets(slide)
 
         parsed = self.safe_parse(response)
         return parsed or self.fix_json(response)
+        
+
+    def generate_two_column(self, slide):
+       prompt = f"""
+      Generate a two-column slide.
+
+ Slide:
+{slide}
+
+Return JSON:
+{{
+  "type": "bullets",
+  "layout": "two_column",
+  "heading": "...",
+  "left": ["...", "..."],
+  "right": ["...", "..."]
+}}
+"""
+       return self.llm.generate(prompt)
+        
+    
+    def generate_bullets(self, slide):
+       prompt = f"""
+Generate bullet points.
+
+Slide:
+{slide}
+
+Return JSON:
+{{
+  "type": "bullets",
+  "layout": "center",
+  "heading": "...",
+  "points": ["...", "..."]
+}}
+"""
+       return self.llm.generate(prompt)
+        
     
