@@ -4,6 +4,7 @@ import BulletSlide from "./slides/BulletSlide"
 import TwoColumnLayout from "./layouts/TwoColumnLayout"
 import CenterLayout from "./layouts/CenterLayout"
 import { themes } from "../theme/themes"
+import ImageSlide from "./slides/ImageSlide"
 
 export default function SlideRenderer({ slide }) {
   if (!slide) return null
@@ -20,6 +21,10 @@ export default function SlideRenderer({ slide }) {
 
     case "bullets":
       Content = BulletSlide
+      break
+
+    case "image_text":
+      Content = ImageSlide
       break
 
     default:

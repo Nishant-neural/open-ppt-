@@ -45,7 +45,7 @@ Return ONLY JSON:
 {{
   "slides": [
     {{
-      "type": "title | bullets",
+      "type": "title | bullets | image_text",
       "layout": "center | two_column",
       "heading": "string",
       "description": "short description "
@@ -70,6 +70,12 @@ Rules:
 - Use center when:
   - explaining concepts
   - storytelling
+
+- Use "image_text" when:
+  - concept is visual
+  - diagram helps
+  - architecture explanation
+  - Use "two_column" for image_text
 """
 
         response = self.llm.generate(prompt)
@@ -96,15 +102,18 @@ class SlideContentStage(BaseStage):
         }
 
     def generate_slide_content(self, slide):
+        if slide["type"] == "image_text":
+           return self.generate_image_slide(slide)
+        
         if slide.get("layout") not in ["center", "two_column"]:
            slide["layout"] = "center"
-           
+
         layout = slide.get("layout")
         
         if layout == "two_column":
            response = self.generate_two_column(slide)
         else:
-           response = self.generate_bullets(slide)
+           response = self.generate_center(slide)
 
         parsed = self.safe_parse(response)
         return parsed or self.fix_json(response)
@@ -112,12 +121,13 @@ class SlideContentStage(BaseStage):
 
     def generate_two_column(self, slide):
        prompt = f"""
-      Generate a two-column slide.
+       You are a presentation slide content generator.
+      Generate content for a two_column slide.
 
  Slide:
 {slide}
 
-Return JSON:
+Return only JSON:
 {{
   "type": "bullets",
   "layout": "two_column",
@@ -129,14 +139,15 @@ Return JSON:
        return self.llm.generate(prompt)
         
     
-    def generate_bullets(self, slide):
+    def generate_center(self, slide):
        prompt = f"""
-Generate bullet points.
+       You are a presentation slide content generator.
+Generate content for slide.
 
 Slide:
 {slide}
 
-Return JSON:
+Return only JSON:
 {{
   "type": "bullets",
   "layout": "center",
@@ -146,4 +157,24 @@ Return JSON:
 """
        return self.llm.generate(prompt)
         
-    
+    def generate_image_slide(self, slide):
+       prompt = f"""
+Generate an image-based slide.
+
+Slide:
+{slide}
+
+Return JSON:
+{{
+  "type": "image_text",
+  "layout": "two_column",
+  "heading": "...",
+  "text": "short explanation",
+  "image_query": "search keywords"
+}}
+
+Rules:
+- image_query should be specific (e.g., 'neural network layers diagram')
+- text should be short (2–3 lines)
+"""
+       return self.llm.generate(prompt)
