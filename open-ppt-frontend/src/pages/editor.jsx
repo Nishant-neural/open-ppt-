@@ -17,7 +17,7 @@ export default function Editor({ slides, setSlides }) {
 
   return (
     <div>
-      {/* Input */}
+    
       <input
         value={prompt}
         onChange={(e) => setPrompt(e.target.value)}
@@ -28,14 +28,18 @@ export default function Editor({ slides, setSlides }) {
         Generate
       </button>
 
-      {/* Slide View */}
-      {slides && slides.length > 0 && slides[index] &&  (
-        <SlideRenderer slide={slides[index]} />
-      )}
+     
+      <div className="w-full h-screen overflow-hidden">
+  {slides?.length > 0 && slides[index] && (
+    <SlideRenderer slide={slides[index]} />
+  )}
+</div>
 
-      {/* Navigation */}
-      <button onClick={() => setIndex(index - 1)}>Prev</button>
-      <button onClick={() => setIndex(index + 1)}>Next</button>
+      
+     <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 flex gap-4">
+  <button onClick={() => setIndex(index - 1)}>⬅</button>
+  <button onClick={() => setIndex(index + 1)}>➡</button>
+</div>
     </div>
   )
 }
