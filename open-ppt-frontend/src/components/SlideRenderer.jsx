@@ -1,21 +1,42 @@
 import { motion } from "framer-motion"
 import TitleSlide from "./slides/TitleSlide"
 import BulletSlide from "./slides/BulletSlide"
+import TwoColumnLayout from "./layouts/TwoColumnLayout"
+import CenterLayout from "./layouts/CenterLayout"
+import { themes } from "../theme/themes"
 
 export default function SlideRenderer({ slide }) {
   if (!slide) return null
 
-  let Component
+  const theme = themes["gradient"]
+
+ 
+  let Content
 
   switch (slide.type) {
     case "title":
-      Component = TitleSlide
+      Content = TitleSlide
       break
+
     case "bullets":
-      Component = BulletSlide
+      Content = BulletSlide
       break
+
     default:
-      Component = BulletSlide
+      Content = BulletSlide
+  }
+
+ 
+  let Layout
+
+  switch (slide.layout) {
+    case "two_column":
+      Layout = TwoColumnLayout
+      break
+
+    case "center":
+    default:
+      Layout = CenterLayout
   }
 
   return (
@@ -23,10 +44,11 @@ export default function SlideRenderer({ slide }) {
       key={slide.heading}
       initial={{ opacity: 0, x: 50 }}
       animate={{ opacity: 1, x: 0 }}
-      exit={{ opacity: 0, x: -50 }}
       transition={{ duration: 0.4 }}
     >
-      <Component slide={slide} />
+      <Layout theme={theme}>
+        <Content slide={slide} />
+      </Layout>
     </motion.div>
   )
 }
