@@ -1,4 +1,3 @@
-# prompts.py
 
 OUTLINE_PROMPT = """
 You are an expert presentation planner.
@@ -25,38 +24,21 @@ Rules:
 - No explanations outside JSON
 """
 
-SLIDE_PLAN_PROMPT = """
-Create a slide plan for this presentation.
-
-Outline:
-{outline_json}
-
-Return ONLY JSON:
-{{
-  "slides": [
-    {{
-      "heading": "string",
-      "description": "what this slide should cover"
-    }}
-  ]
-}}
-
-Rules:
-- 5–10 slides
-- logical flow
-- no bullet points yet
-"""
 
 CLEANUP_PROMPT = """
-Fix the following JSON.
+You are a fixer.
+Task:
+Convert BAD_OUTPUT into strict JSON.
 
 Return ONLY valid JSON.
 Do not change meaning.
 
-JSON:
-"""
-BEAUTIFIER_PROMPT = """
-Improve wording + make concise + professional
+Rules:
+- Return STRICT JSON.
+- Do NOT include explanations, markdown, or extra text.
+- Do NOT wrap the JSON in quotes.
+- If the input looks like a single slide, return one JSON object.
+- If the input looks like a presentation, return a JSON object with a "slides" array.
 
-
+BAD_OUTPUT:
 """

@@ -16,7 +16,7 @@ class OllamaLLM(BaseLLM):
                         "model": self.model,
                         "prompt": prompt,
                         "stream": False,
-                        "temperature": 0.3
+                        "temperature": 0.2
                     },
                     timeout=OLLAMA_TIMEOUT_SECONDS
                 )

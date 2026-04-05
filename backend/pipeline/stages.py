@@ -5,14 +5,84 @@ from prompt.builder import build_prompt
 
 class BaseStage:
     def safe_parse(self, text):
+        if isinstance(text, dict):
+            return text
+
+        if isinstance(text, list):
+            return text
+
+        if not isinstance(text, str):
+            return None
+
+        cleaned = text.strip()
+
         try:
-            return json.loads(text)
-        except:
+            return json.loads(cleaned)
+        except json.JSONDecodeError:
+            start = cleaned.find("{")
+            end = cleaned.rfind("}")
+
+            if start != -1 and end != -1 and end > start:
+                try:
+                    return json.loads(cleaned[start:end + 1])
+                except json.JSONDecodeError:
+                    return None
+
             return None
         
     def fix_json(self, bad_json):
         fixed = self.llm.generate(CLEANUP_PROMPT + bad_json)
         return self.safe_parse(fixed)
+
+    def normalize_slide(self, slide_data):
+        if slide_data is None:
+            return None
+
+        if isinstance(slide_data, str):
+            slide_data = self.safe_parse(slide_data) or self.fix_json(slide_data)
+
+        if isinstance(slide_data, list):
+            if len(slide_data) == 1:
+                return self.normalize_slide(slide_data[0])
+            return None
+
+        if not isinstance(slide_data, dict):
+            return None
+
+        if slide_data.get("type") == "image_text":
+            return {
+                "type": "image_text",
+                "layout": "two_column",
+                "heading": slide_data.get("heading", ""),
+                "text": slide_data.get("text", ""),
+                "image_query": slide_data.get("image_query", "")
+            }
+
+        if slide_data.get("type") == "title":
+            return {
+                "type": "title",
+                "layout": "center",
+                "heading": slide_data.get("heading", ""),
+                "points": slide_data.get("points", [])
+            }
+
+        layout = slide_data.get("layout", "center")
+
+        if layout == "two_column":
+            return {
+                "type": "bullets",
+                "layout": "two_column",
+                "heading": slide_data.get("heading", ""),
+                "left": slide_data.get("left", []),
+                "right": slide_data.get("right", [])
+            }
+
+        return {
+            "type": "bullets",
+            "layout": "center",
+            "heading": slide_data.get("heading", ""),
+            "points": slide_data.get("points", [])
+        }
 
     
 class OutlineStage(BaseStage):
@@ -102,8 +172,15 @@ class SlideContentStage(BaseStage):
         }
 
     def generate_slide_content(self, slide):
+        if slide["type"] == "title":
+           response = self.generate_title(slide)
+           parsed = self.safe_parse(response)
+           return self.normalize_slide(parsed or self.fix_json(response))
+
         if slide["type"] == "image_text":
-           return self.generate_image_slide(slide)
+           response = self.generate_image_slide(slide)
+           parsed = self.safe_parse(response)
+           return self.normalize_slide(parsed or self.fix_json(response))
         
         if slide.get("layout") not in ["center", "two_column"]:
            slide["layout"] = "center"
@@ -116,15 +193,38 @@ class SlideContentStage(BaseStage):
            response = self.generate_center(slide)
 
         parsed = self.safe_parse(response)
-        return parsed or self.fix_json(response)
+        return self.normalize_slide(parsed or self.fix_json(response))
+
+    def generate_title(self, slide):
+       prompt = f"""
+You are a presentation slide content generator.
+Generate content for the title slide.
+
+Slide:
+{slide}
+
+Return only JSON:
+{{
+  "type": "title",
+  "layout": "center",
+  "heading": "...",
+  "points": ["optional subtitle", "optional presenter or context"]
+}}
+
+Rules:
+- Return ONLY valid JSON.
+- Do NOT include explanations, markdown, or extra text.
+- Return a single JSON object, not an array.
+"""
+       return self.llm.generate(prompt)
         
 
     def generate_two_column(self, slide):
        prompt = f"""
-       You are a presentation slide content generator.
-      Generate content for a two_column slide.
+You are a presentation slide content generator.
+Generate content for a two_column slide.
 
- Slide:
+Slide:
 {slide}
 
 Return only JSON:
@@ -135,13 +235,18 @@ Return only JSON:
   "left": ["...", "..."],
   "right": ["...", "..."]
 }}
+
+Rules:
+- Return ONLY valid JSON.
+- Do NOT include explanations, markdown, or extra text.
+- Return a single JSON object, not an array.
 """
        return self.llm.generate(prompt)
         
     
     def generate_center(self, slide):
        prompt = f"""
-       You are a presentation slide content generator.
+You are a presentation slide content generator.
 Generate content for slide.
 
 Slide:
@@ -154,6 +259,11 @@ Return only JSON:
   "heading": "...",
   "points": ["...", "..."]
 }}
+
+Rules:
+- Return ONLY valid JSON.
+- Do NOT include explanations, markdown, or extra text.
+- Return a single JSON object, not an array.
 """
        return self.llm.generate(prompt)
         
@@ -175,6 +285,9 @@ Return JSON:
 
 Rules:
 - image_query should be specific (e.g., 'neural network layers diagram')
-- text should be short (2–3 lines)
+- text should be short (2-3 lines)
+- Return ONLY valid JSON.
+- Do NOT include explanations, markdown, or extra text.
+- Return a single JSON object, not an array.
 """
        return self.llm.generate(prompt)
