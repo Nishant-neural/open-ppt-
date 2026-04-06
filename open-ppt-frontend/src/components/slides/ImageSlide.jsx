@@ -4,29 +4,46 @@ export default function ImageSlide({ slide }) {
   const imageUrl = getImageUrl(slide.image_query)
 
   return (
-    <div className="h-screen w-full flex items-center justify-center px-24 bg-white text-black">
-      
-      <div className="grid grid-cols-2 gap-12 items-center max-w-6xl">
-        
-        <div>
-          <h2 className="text-4xl font-bold mb-6">
-            {slide.heading}
-          </h2>
+    <>
+      <div style={{ display: "flex", flexDirection: "column", justifyContent: "center" }}>
+        <h2
+          style={{
+            fontSize: "clamp(2rem, 4vw, 3.25rem)",
+            fontWeight: 700,
+            lineHeight: 1.15,
+            margin: "0 0 24px",
+          }}
+        >
+          {slide.heading}
+        </h2>
 
-          <p className="text-xl opacity-90">
-            {slide.text}
-          </p>
-        </div>
-
-        <div>
-          <img
-            src={imageUrl}
-            alt=""
-            className="rounded-2xl shadow-2xl w-full max-h-[500px] object-cover"
-          />
-        </div>
-
+        <p
+          style={{
+            fontSize: "1.25rem",
+            lineHeight: 1.7,
+            margin: 0,
+            maxWidth: "520px",
+          }}
+        >
+          {slide.text}
+        </p>
       </div>
-    </div>
+
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <img
+          src={imageUrl}
+          alt={slide.heading || "Slide illustration"}
+          style={{
+            width: "100%",
+            maxWidth: "560px",
+            maxHeight: "420px",
+            objectFit: "cover",
+            borderRadius: "24px",
+            boxShadow: "0 20px 40px rgba(0, 0, 0, 0.22)",
+            background: "rgba(255, 255, 255, 0.18)",
+          }}
+        />
+      </div>
+    </>
   )
 }

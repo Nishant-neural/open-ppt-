@@ -5,6 +5,7 @@ import { generateSlides } from "../services/api"
 export default function Editor({ slides, setSlides }) {
   const [prompt, setPrompt] = useState("")
   const [index, setIndex] = useState(0)
+  const maxIndex = Math.max(slides.length - 1, 0)
 
   const handleGenerate = async () => {
     const data = await generateSlides(prompt)
@@ -14,18 +15,21 @@ export default function Editor({ slides, setSlides }) {
 
   useEffect(() => {
     const handleKey = (e) => {
-      if (e.key === "ArrowRight") setIndex((i) => i + 1)
-      if (e.key === "ArrowLeft") setIndex((i) => i - 1)
+      if (e.key === "ArrowRight") {
+        setIndex((current) => Math.min(current + 1, maxIndex))
+      }
+
+      if (e.key === "ArrowLeft") {
+        setIndex((current) => Math.max(current - 1, 0))
+      }
     }
 
     window.addEventListener("keydown", handleKey)
     return () => window.removeEventListener("keydown", handleKey)
-  }, [])
+  }, [maxIndex])
 
   return (
     <div className="w-full h-screen overflow-hidden">
-      
-      {/* Input */}
       <div className="fixed top-5 left-1/2 transform -translate-x-1/2 z-10">
         <input
           className="px-4 py-2 border rounded"
@@ -41,17 +45,18 @@ export default function Editor({ slides, setSlides }) {
         </button>
       </div>
 
-      {/* Slide */}
       {slides?.length > 0 && slides[index] && (
         <SlideRenderer slide={slides[index]} />
       )}
 
-      {/* Navigation */}
       <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 flex gap-4">
-        <button onClick={() => setIndex(index - 1)}>⬅</button>
-        <button onClick={() => setIndex(index + 1)}>➡</button>
+        <button onClick={() => setIndex((current) => Math.max(current - 1, 0))}>
+          Prev
+        </button>
+        <button onClick={() => setIndex((current) => Math.min(current + 1, maxIndex))}>
+          Next
+        </button>
       </div>
-
     </div>
   )
 }
